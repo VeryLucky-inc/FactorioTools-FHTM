@@ -6,30 +6,184 @@
                  xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                  xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                  xmlns:local="clr-namespace:FHTM"
+                 xmlns:lmc="clr-namespace:LMC"
                  mc:Ignorable="d"
                  Title="Factorio Helper Tools Manager" Height="450" Width="800">
 
-    <mah:MetroWindow.RightWindowCommands>
+    <!--<mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands>
-            <Button Click="DeployCupCakes" Content="Deploy CupCakes">
-                <Button.ContentTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconModern Width="22"
-                                        Height="22"
-                                        VerticalAlignment="Center"
-                                        Kind="FoodCupcake" />
-                            <TextBlock Margin="4 0 0 0"
-                         VerticalAlignment="Center"
-                         Text="{Binding}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </Button.ContentTemplate>
-            </Button>
+            
         </mah:WindowCommands>
-    </mah:MetroWindow.RightWindowCommands>
+    </mah:MetroWindow.LeftWindowCommands>-->
+
+    <!--<mah:MetroWindow.RightWindowCommands>
+        <mah:WindowCommands>
+            
+        </mah:WindowCommands>
+    </mah:MetroWindow.RightWindowCommands>-->
+
+    <mah:MetroWindow.Flyouts>
+        <mah:FlyoutsControl>
+
+            <mah:Flyout IsOpen="True" x:Name="FlyoutDownloads" Header="{Binding TranslateDownloads, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Theme="Adapt" Position="Right">
+                <local:MyGridView ItemsSource="{Binding DownloadsList, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}">
+                    <ItemsControl.Style>
+                        <Style TargetType="{x:Type local:MyGridView}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type local:MyGridView}">
+                                        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                                            <ScrollViewer CanContentScroll="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                                                <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                            </ScrollViewer>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ItemsControl.Style>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <local:VariableSizedWrapGrid ItemHeight="100" ItemWidth="150"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Margin" Value="0,0,4,4"/>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Height="60" Width="146">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="40"/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <Grid.Background>
+                                    <SolidColorBrush Color="LightGray"/>
+                                </Grid.Background>
+                                
+                                <StackPanel Grid.Row="0">
+                                    <StackPanel.Background>
+                                        <SolidColorBrush Color="Black" Opacity=".75"/>
+                                    </StackPanel.Background>
+                                    <TextBlock Foreground="Ivory" FontSize="15" Margin="10">
+                                        <!--<Run Text="{Binding Title, Mode=OneWay}"/>-->
+                                        <Run Text="{Binding BytesWritten, Mode=OneWay}"/>/<Run Text="{Binding ContentLength, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Border BorderThickness="3" Grid.Row="1">
+                                    <ProgressBar Value="{Binding BytesWritten, Mode=OneWay}" Maximum="{Binding ContentLength, Mode=OneWay}"/>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </local:MyGridView>
+            </mah:Flyout>
+            
+            
+            
+        </mah:FlyoutsControl>
+    </mah:MetroWindow.Flyouts>
 
     <Grid>
+        <Border BorderThickness="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <Border BorderThickness="3" Grid.Column="0" Grid.Row="0">
+                        <Button Content="{Binding TranslateMods, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                    </Border>
+                    <Border BorderThickness="3" Grid.Column="0" Grid.Row="1">
+                        <Button Content="{Binding TranslateScenario, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                    </Border>
+                    <Border BorderThickness="3" Grid.Column="0" Grid.Row="2">
+                        <Button Content="{Binding TranslateProfile, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                    </Border>
+                    <Border BorderThickness="3" Grid.Column="1" Grid.Row="0">
+                        <Button Content="{Binding TranslateGame, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                    </Border>
+                    <Border BorderThickness="3" Grid.Column="1" Grid.Row="1">
+                        <Button Content="{Binding TranslateSaves, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                    </Border>
+                    <Border BorderThickness="3" Grid.Column="1" Grid.Row="2">
+                        <ToggleButton IsChecked="{Binding ElementName=FlyoutDownloads, Path=IsOpen}" Content="{Binding TranslateDownloads, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                    </Border>
+                    <Border BorderThickness="3" Grid.Column="2" Grid.Row="0">
+                        <Button Content="{Binding TranslateBuilds, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                    </Border>
+                    <Border BorderThickness="3" Grid.Column="2" Grid.Row="1">
+                        <Button Content="{Binding TranslateBlueprints, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                    </Border>
+                    <Border BorderThickness="3" Grid.Column="2" Grid.Row="2">
+                        <Button Content="{Binding TranslateAbout, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                    </Border>
+                </Grid>
+
+                <StackPanel Orientation="Vertical" Grid.Column="1">
+                    <Border BorderThickness="3">
+                        <Label Content="Настройки приложения:" FontSize="15" FontWeight="Bold"/>
+                    </Border>
+                    <Border BorderThickness="3">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Тема приложения:"/>
+                            <Button Width="25" Height="25" Background="Black"/>
+                            <Border BorderThickness="3"/>
+                            <Button Width="25" Height="25" Background="White"/>
+                        </StackPanel>
+                    </Border>
+                    <Border BorderThickness="3">
+                        <Label Content="Консоль:"/>
+                    </Border>
+                    <Border BorderThickness="3">
+                        <RichTextBox x:Name="Console" Height="150"/>
+                    </Border>
+                    <Border BorderThickness="3">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Width="100" Content="Путь до модов"/>
+                            <Label Content="-путь до папки с модами-"/>
+                        </StackPanel>
+                    </Border>
+                    <Border BorderThickness="3">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Width="100" Content="Путь до игры"/>
+                            <Label Content="-путь до папки с игрой-"/>
+                        </StackPanel>
+                    </Border>
+                    <Border BorderThickness="3">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Width="100" Content="Каталог FHTM"/>
+                            <Label Content="-путь до папки с программой-"/>
+                        </StackPanel>
+                    </Border>
+                    <Border BorderThickness="3">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="103"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Content="Локализация:"/>
+                            <ComboBox Grid.Column="1"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
         
     </Grid>
 </mah:MetroWindow>
