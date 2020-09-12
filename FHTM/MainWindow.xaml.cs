@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -16,6 +17,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MahApps.Metro.Controls;
+using System.Management;
+using Microsoft.Win32;
+using IWshRuntimeLibrary;
 
 namespace FHTM
 {
@@ -28,7 +32,10 @@ namespace FHTM
         {
             InitializeComponent();
             InitializeLocalization();
-            TestDownloader();
+            InitializeValues();
+            //TestDownloader();
+            SearchGame();
+            SearchMods();
         }
 
         #region Функции
@@ -47,7 +54,8 @@ namespace FHTM
             TranslateAbout = "О программе";
             TranslateAppSetings = "Настройки приложения:";
             TranslateAppTheme = "Тема приложения:";
-            TranslateConsole = "Консоль:";
+            TranslateAppMode = "Режим: ";
+            TranslateAppConsole = "Консоль:";
             TranslateModsPath = "Путь до модов";
             TranslateGamePath = "Путь до игры";
             TranslateAppPath = "Путь до FHTM";
@@ -57,19 +65,75 @@ namespace FHTM
 
         #endregion
 
+        #region Initialize
+        private void InitializeValues()
+        {
+            DownloadsList = new ObservableCollection<Downloader.FileDownload>();
+        }
+        private void InitializeProfile()
+        {
+
+        }
+        #endregion
+
+        #region Game Search
+        private void SearchGame()
+        {
+            RegistryKey key;
+            try
+            {
+                key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
+
+                Console.AppendText($"Поиск установленной игры..." + "\n");
+                foreach (String keyName in key.GetSubKeyNames())
+                {
+                    dynamic subkey = key.OpenSubKey(keyName);
+                    string stn = subkey.GetValue("DisplayName") as string;
+                    string stv = subkey.GetValue("InstallLocation") as string;
+
+                    if (!String.IsNullOrWhiteSpace(stn) && !String.IsNullOrWhiteSpace(stv))
+                    {
+                        if (stn.Contains("Factorio") || stv.Contains("Factorio"))
+                        {
+                            Console.AppendText($"{stn}: {stv}" + "\n");
+                            PathGame = stv;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.AppendText($"{ex.Message}" + "\n");
+            }
+        }
+        private void SearchMods()
+        {
+            string linkPathName = PathGame + "mods.lnk"; // Change this to the shortcut path
+            
+            if (System.IO.File.Exists(linkPathName))
+            {
+                //WshShellClass shell = new WshShellClass();
+                WshShell shell = new WshShell(); //Create a new WshShell Interface
+                IWshShortcut link = (IWshShortcut)shell.CreateShortcut(linkPathName); //Link the interface to our shortcut
+
+                PathMods = link.TargetPath;
+            }
+        }
+        #endregion
+
         #region Тестовые функции
         private void TestDownloaderInterface()
         {
-            DownloadsList.Add(new Downloader.FileDownload("https://factorio-launcher-mods.storage.googleapis.com/Krastorio2/1.0.4.zip", ".\\"));
-            DownloadsList.Add(new Downloader.FileDownload("https://factorio-launcher-mods.storage.googleapis.com/Nanobots/3.2.8.zip", ".\\"));
+            //DownloadsList.Add(new Downloader.FileDownload("https://factorio-launcher-mods.storage.googleapis.com/Krastorio2/1.0.4.zip", ".\\"));
+            //DownloadsList.Add(new Downloader.FileDownload("https://factorio-launcher-mods.storage.googleapis.com/Nanobots/3.2.8.zip", ".\\"));
             //DownloadsList.Add(new Downloader.FileDownload("", ".\\"));
             //DownloadsList.Add(new Downloader.FileDownload("", ".\\"));
             //DownloadsList.Add(new Downloader.FileDownload("", ".\\"));
         }
         public void TestDownloader()
         {
-            DownloadsList.Add(new Downloader.FileDownload("https://factorio-launcher-mods.storage.googleapis.com/Krastorio2/1.0.4.zip", ".\\"));
-            DownloadsList.Add(new Downloader.FileDownload("https://factorio-launcher-mods.storage.googleapis.com/Nanobots/3.2.8.zip", ".\\"));
+            //DownloadsList.Add(new Downloader.FileDownload("https://factorio-launcher-mods.storage.googleapis.com/Krastorio2/1.0.4.zip", ".\\"));
+            //DownloadsList.Add(new Downloader.FileDownload("https://factorio-launcher-mods.storage.googleapis.com/Nanobots/3.2.8.zip", ".\\"));
             //DownloadsList.Add(new Downloader.FileDownload("", ".\\"));
             //DownloadsList.Add(new Downloader.FileDownload("", ".\\"));
             //DownloadsList.Add(new Downloader.FileDownload("", ".\\"));
@@ -165,11 +229,11 @@ namespace FHTM
             set { _TranslateAppTheme = value; OnPropertyChanged("TranslateAppTheme"); }
         }
 
-        private string _TranslateConsole;
-        public string TranslateConsole
+        private string _TranslateAppConsole;
+        public string TranslateAppConsole
         {
-            get { return _TranslateConsole; }
-            set { _TranslateConsole = value; OnPropertyChanged("TranslateConsole"); }
+            get { return _TranslateAppConsole; }
+            set { _TranslateAppConsole = value; OnPropertyChanged("TranslateAppConsole"); }
         }
 
         private string _TranslateModsPath;
@@ -199,17 +263,53 @@ namespace FHTM
             get { return _TranslateLocalization; }
             set { _TranslateLocalization = value; OnPropertyChanged("TranslateLocalization"); }
         }
+
+        private string _TranslateAppMode;
+        public string TranslateAppMode
+        {
+            get { return _TranslateAppMode; }
+            set { _TranslateAppMode = value; OnPropertyChanged("TranslateAppMode"); }
+        }
+
         #endregion
 
         #endregion
 
         #region Другие данные
 
-        private ObservableCollection<Downloader.FileDownload> _DownloadsList = new ObservableCollection<Downloader.FileDownload>();
+        private ObservableCollection<Downloader.FileDownload> _DownloadsList;
         public ObservableCollection<Downloader.FileDownload> DownloadsList
         {
             get { return _DownloadsList; }
             set { _DownloadsList = value; OnPropertyChanged("DownloadsList"); }
+        }
+
+        private string _PathMods;
+        public string PathMods
+        {
+            get { return _PathMods; }
+            set { _PathMods = value; OnPropertyChanged("PathMods"); }
+        }
+
+        private string _PathGame;
+        public string PathGame
+        {
+            get { return _PathGame; }
+            set { _PathGame = value; OnPropertyChanged("PathGame"); }
+        }
+
+        private string _PathApp;
+        public string PathApp
+        {
+            get { return _PathApp; }
+            set { _PathApp = value; OnPropertyChanged("PathApp"); }
+        }
+
+        private bool _ModeBuilds;
+        public bool ModeBuilds
+        {
+            get { return _ModeBuilds; }
+            set { _ModeBuilds = value; OnPropertyChanged("ModeBuilds"); }
         }
 
         #endregion

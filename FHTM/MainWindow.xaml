@@ -25,7 +25,7 @@
     <mah:MetroWindow.Flyouts>
         <mah:FlyoutsControl>
 
-            <mah:Flyout IsOpen="True" x:Name="FlyoutDownloads" Header="{Binding TranslateDownloads, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Theme="Adapt" Position="Right">
+            <mah:Flyout x:Name="FlyoutDownloads" Header="{Binding TranslateDownloads, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Theme="Adapt" Position="Right">
                 <local:MyGridView ItemsSource="{Binding DownloadsList, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}">
                     <ItemsControl.Style>
                         <Style TargetType="{x:Type local:MyGridView}">
@@ -88,7 +88,7 @@
 
     <Grid>
         <Border BorderThickness="10">
-            <Grid>
+            <Grid x:Name="MainGrid">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -135,53 +135,63 @@
                     </Border>
                 </Grid>
 
-                <StackPanel Orientation="Vertical" Grid.Column="1">
-                    <Border BorderThickness="3">
-                        <Label Content="Настройки приложения:" FontSize="15" FontWeight="Bold"/>
-                    </Border>
-                    <Border BorderThickness="3">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Тема приложения:"/>
-                            <Button Width="25" Height="25" Background="Black"/>
-                            <Border BorderThickness="3"/>
-                            <Button Width="25" Height="25" Background="White"/>
-                        </StackPanel>
-                    </Border>
-                    <Border BorderThickness="3">
-                        <Label Content="Консоль:"/>
-                    </Border>
-                    <Border BorderThickness="3">
-                        <RichTextBox x:Name="Console" Height="150"/>
-                    </Border>
-                    <Border BorderThickness="3">
-                        <StackPanel Orientation="Horizontal">
-                            <Button Width="100" Content="Путь до модов"/>
-                            <Label Content="-путь до папки с модами-"/>
-                        </StackPanel>
-                    </Border>
-                    <Border BorderThickness="3">
-                        <StackPanel Orientation="Horizontal">
-                            <Button Width="100" Content="Путь до игры"/>
-                            <Label Content="-путь до папки с игрой-"/>
-                        </StackPanel>
-                    </Border>
-                    <Border BorderThickness="3">
-                        <StackPanel Orientation="Horizontal">
-                            <Button Width="100" Content="Каталог FHTM"/>
-                            <Label Content="-путь до папки с программой-"/>
-                        </StackPanel>
-                    </Border>
-                    <Border BorderThickness="3">
+                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto" Grid.Column="1">
+                    <StackPanel Orientation="Vertical">
+                        <Border BorderThickness="3">
+                            <Label Content="{Binding TranslateAppSetings, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" FontSize="15" FontWeight="Bold"/>
+                        </Border>
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="103"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Content="Локализация:"/>
-                            <ComboBox Grid.Column="1"/>
+                            <Border BorderThickness="3" HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="{Binding TranslateAppTheme, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                    <Button Width="25" Height="25" Background="Black"/>
+                                    <Border BorderThickness="3"/>
+                                    <Button Width="25" Height="25" Background="White"/>
+                                </StackPanel>
+                            </Border>
+                            <Border BorderThickness="3" HorizontalAlignment="Right">
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Content="{Binding TranslateAppMode, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                    <mah:ToggleSwitch Width="140" IsOn="{Binding ModeBuilds, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" OnContent="Сборки" OffContent="Обычный"/>
+                                </StackPanel>
+                            </Border>
                         </Grid>
-                    </Border>
-                </StackPanel>
+                        <Border BorderThickness="3">
+                            <Label Content="{Binding TranslateAppConsole, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                        </Border>
+                        <Border BorderThickness="3">
+                            <RichTextBox x:Name="Console" Height="150"/>
+                        </Border>
+                        <Border BorderThickness="3">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Width="100" Content="{Binding TranslateModsPath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                <Label Content="{Binding PathMods, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border BorderThickness="3">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Width="100" Content="{Binding TranslateGamePath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                <Label Content="{Binding PathGame, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border BorderThickness="3">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Width="100" Content="{Binding TranslateAppPath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                <Label Content="{Binding PathApp, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border BorderThickness="3">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="103"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" Content="{Binding TranslateLocalization, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                <ComboBox Grid.Column="1"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
         </Border>
         

@@ -341,3 +341,45 @@ namespace ModsList
     }
 }
 
+/// <summary>
+/// Profile JSON
+/// </summary>
+namespace FHTM.Profile
+{
+    using System;
+    using System.Collections.Generic;
+
+    using System.Globalization;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+
+    public partial class Info
+    {
+
+        [JsonProperty("UserName", NullValueHandling = NullValueHandling.Ignore)]
+        public string UserName { get; set; }
+
+        [JsonProperty("Password", NullValueHandling = NullValueHandling.Ignore)]
+        public string Password { get; set; }
+
+        [JsonProperty("PathMods", NullValueHandling = NullValueHandling.Ignore)]
+        public string PathMods { get; set; }
+
+        [JsonProperty("PathGame", NullValueHandling = NullValueHandling.Ignore)]
+        public string PathGame { get; set; }
+
+        [JsonProperty("ModeBuilds", NullValueHandling = NullValueHandling.Ignore)]
+        public bool ModeBuilds { get; set; }
+
+    }
+
+    public partial class Info
+    {
+        public static Info FromJson(string json) => JsonConvert.DeserializeObject<Info>(json, ModObj.Converter.Settings);
+    }
+
+    public static class Serialize
+    {
+        public static string ToJson(this Info self) => JsonConvert.SerializeObject(self, ModObj.Converter.Settings);
+    }
+}
