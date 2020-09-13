@@ -353,11 +353,11 @@ namespace FHTM.Profile
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 
-    public partial class Info
+    #region Config
+    public class Config
     {
-
-        [JsonProperty("UserName", NullValueHandling = NullValueHandling.Ignore)]
-        public string UserName { get; set; }
+        [JsonProperty("Username", NullValueHandling = NullValueHandling.Ignore)]
+        public string Username { get; set; }
 
         [JsonProperty("Password", NullValueHandling = NullValueHandling.Ignore)]
         public string Password { get; set; }
@@ -368,18 +368,104 @@ namespace FHTM.Profile
         [JsonProperty("PathGame", NullValueHandling = NullValueHandling.Ignore)]
         public string PathGame { get; set; }
 
+        [JsonProperty("PathGameConfig", NullValueHandling = NullValueHandling.Ignore)]
+        public string PathGameConfig { get; set; }
+
+        [JsonProperty("PathSaves", NullValueHandling = NullValueHandling.Ignore)]
+        public string PathSaves { get; set; }
+
+        [JsonProperty("AppTheme", NullValueHandling = NullValueHandling.Ignore)]
+        public string AppTheme { get; set; }
+
+        [JsonProperty("AppLocalization", NullValueHandling = NullValueHandling.Ignore)]
+        public string AppLocalization { get; set; }
+
         [JsonProperty("ModeBuilds", NullValueHandling = NullValueHandling.Ignore)]
         public bool ModeBuilds { get; set; }
-
     }
+    #endregion
 
-    public partial class Info
+    #region Localization
+    public class Localization
     {
-        public static Info FromJson(string json) => JsonConvert.DeserializeObject<Info>(json, ModObj.Converter.Settings);
+        [JsonProperty("TranslateMods", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateMods { get; set; }
+
+        [JsonProperty("TranslateGame", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateGame { get; set; }
+
+        [JsonProperty("TranslateScenario", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateScenario { get; set; }
+
+        [JsonProperty("TranslateProfile", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateProfile { get; set; }
+
+        [JsonProperty("TranslateSaves", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateSaves { get; set; }
+
+        [JsonProperty("TranslateDownloads", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateDownloads { get; set; }
+
+        [JsonProperty("TranslateBuilds", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateBuilds { get; set; }
+
+        [JsonProperty("TranslateBlueprints", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateBlueprints { get; set; }
+
+        [JsonProperty("TranslateAbout", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateAbout { get; set; }
+
+        [JsonProperty("TranslateAppSetings", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateAppSetings { get; set; }
+
+        [JsonProperty("TranslateAppTheme", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateAppTheme { get; set; }
+
+        [JsonProperty("TranslateAppMode", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateAppMode { get; set; }
+
+        [JsonProperty("TranslateAppConsole", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateAppConsole { get; set; }
+
+        [JsonProperty("TranslateModsPath", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateModsPath { get; set; }
+
+        [JsonProperty("TranslateGamePath", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateGamePath { get; set; }
+
+        [JsonProperty("TranslateAppPath", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateAppPath { get; set; }
+
+        [JsonProperty("TranslateSavesPath", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateSavesPath { get; set; }
+
+        [JsonProperty("TranslateGameConfigPath", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateGameConfigPath { get; set; }
+
+        [JsonProperty("TranslateLocalization", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateLocalization { get; set; }
+
+        [JsonProperty("TranslateSearchInstalledGame", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateSearchInstalledGame { get; set; }
+
+        [JsonProperty("TranslateDefault", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateDefault { get; set; }
+
+        [JsonProperty("TranslateResetSettings", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateResetSettings { get; set; }
+
+        [JsonProperty("TranslateResetSettingsDialogTitle", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateResetSettingsDialogTitle { get; set; }
+
+        [JsonProperty("TranslateResetSettingsDialogText", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateResetSettingsDialogText { get; set; }
+
     }
+    #endregion
 
     public static class Serialize
     {
-        public static string ToJson(this Info self) => JsonConvert.SerializeObject(self, ModObj.Converter.Settings);
+        public static T FromJson<T>(string json) => JsonConvert.DeserializeObject<T>(json, ModObj.Converter.Settings);
+        public static string ToJson<T>(this T self) => JsonConvert.SerializeObject(self, ModObj.Converter.Settings);
     }
 }

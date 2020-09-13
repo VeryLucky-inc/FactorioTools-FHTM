@@ -135,8 +135,8 @@
                     </Border>
                 </Grid>
 
-                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto" Grid.Column="1">
-                    <StackPanel Orientation="Vertical">
+                <ScrollViewer x:Name="SettingsScrollViewer" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Grid.Column="1">
+                    <StackPanel Orientation="Vertical" Width="{Binding ElementName=SettingsScrollViewer, Path=ActualWidth}">
                         <Border BorderThickness="3">
                             <Label Content="{Binding TranslateAppSetings, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" FontSize="15" FontWeight="Bold"/>
                         </Border>
@@ -144,15 +144,15 @@
                             <Border BorderThickness="3" HorizontalAlignment="Left">
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="{Binding TranslateAppTheme, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
-                                    <Button Width="25" Height="25" Background="Black"/>
+                                    <Button Width="25" Height="25" Background="Black" Click="DarkThemeClick"/>
                                     <Border BorderThickness="3"/>
-                                    <Button Width="25" Height="25" Background="White"/>
+                                    <Button Width="25" Height="25" Background="White" Click="LightThemeClick"/>
                                 </StackPanel>
                             </Border>
                             <Border BorderThickness="3" HorizontalAlignment="Right">
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="{Binding TranslateAppMode, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
-                                    <mah:ToggleSwitch Width="140" IsOn="{Binding ModeBuilds, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" OnContent="Сборки" OffContent="Обычный"/>
+                                    <mah:ToggleSwitch Width="140" IsOn="{Binding ModeBuilds, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" OnContent="{Binding TranslateBuilds, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" OffContent="{Binding TranslateDefault, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -164,19 +164,31 @@
                         </Border>
                         <Border BorderThickness="3">
                             <StackPanel Orientation="Horizontal">
-                                <Button Width="100" Content="{Binding TranslateModsPath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                <Button Width="100" Content="{Binding TranslateModsPath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Click="ChangePath"/>
                                 <Label Content="{Binding PathMods, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
                             </StackPanel>
                         </Border>
                         <Border BorderThickness="3">
                             <StackPanel Orientation="Horizontal">
-                                <Button Width="100" Content="{Binding TranslateGamePath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                <Button Width="100" Content="{Binding TranslateGamePath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Click="ChangePath"/>
                                 <Label Content="{Binding PathGame, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
                             </StackPanel>
                         </Border>
                         <Border BorderThickness="3">
                             <StackPanel Orientation="Horizontal">
-                                <Button Width="100" Content="{Binding TranslateAppPath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                <Button Width="100" Content="{Binding TranslateSavesPath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Click="ChangePath"/>
+                                <Label Content="{Binding PathSaves, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border BorderThickness="3">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Width="100" Content="{Binding TranslateGameConfigPath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Click="ChangePath"/>
+                                <Label Content="{Binding PathGameConfig, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border BorderThickness="3">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Width="100" Content="{Binding TranslateAppPath, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Click="ChangePath"/>
                                 <Label Content="{Binding PathApp, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
                             </StackPanel>
                         </Border>
@@ -187,8 +199,11 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Label Grid.Column="0" Content="{Binding TranslateLocalization, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
-                                <ComboBox Grid.Column="1"/>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding LocalesList, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectedItem="{Binding AppLocalization, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" DropDownClosed="SelectedLocaleChanged" />
                             </Grid>
+                        </Border>
+                        <Border BorderThickness="3">
+                            <Button Background="DarkRed" Foreground="White" Content="{Binding TranslateResetSettings, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Click="ResetAppSettings"/>
                         </Border>
                     </StackPanel>
                 </ScrollViewer>
