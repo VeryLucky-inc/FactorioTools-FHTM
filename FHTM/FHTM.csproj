@@ -195,6 +195,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="GridViewSort.cs" />
     <Compile Include="MyGridView.cs" />
     <Compile Include="VariableSizedWrapGrid.cs" />
     <Compile Include="XSDownloader.cs" />

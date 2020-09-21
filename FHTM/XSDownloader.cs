@@ -3,16 +3,22 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Downloader
 {
     public class FileDownload
     {
+        public delegate void MethodDownloading(FileDownload fd);
+        public event MethodDownloading DownloadingDone;
+        public event MethodDownloading DownloadingStarted;
+        public event MethodDownloading IsDownloadingEv;
         private volatile Boolean IsDownloading;
-        private readonly int SizeOfC=5120;
+        private readonly int SizeOfC = 5120;
         private Lazy<Int64> FileSize;
         private String DownloadURL;
         private String DestinationPath;
+        public String Title { get; set; }
         public IProgress<double> DownloadingProgress;
         public Int64 BytesWritten { get; private set; }
         public Int64 ContentLength => FileSize.Value;
@@ -47,9 +53,6 @@ namespace Downloader
                     BytesWritten = 0;
                 }
             }
-
-            //NewCode
-            Start().ConfigureAwait(false);
         }
         private Int64 GetFileSize()
         {
@@ -70,24 +73,25 @@ namespace Downloader
             {
                 Directory.CreateDirectory(DestinationPath);
             }
-            String FileName=Path.GetFileName(DownloadURL);
+            String FileName = Path.GetFileName(DownloadURL);
             if (String.IsNullOrEmpty(FileName))
             {
                 throw new ArgumentNullException("Файл не может не иметь имени");
             }
             return Path.Combine(DestinationPath, FileName);
         }
-        private async Task Start(Int64 ByteAlreadyExists)
+        private async void Start(Int64 ByteAlreadyExists)
         {
+            DownloadingStarted?.Invoke(this);
             if (!IsDownloading)
             {
                 throw new InvalidOperationException();
             }
             if (Done)
             {
+                DownloadingDone?.Invoke(this);
                 return;
             }
-
             HttpWebRequest DownloadRequest = (HttpWebRequest)HttpWebRequest.Create(DownloadURL);
             DownloadRequest.Method = "GET";
             DownloadRequest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36";
@@ -105,24 +109,30 @@ namespace Downloader
                             if (BytesRead == 0) break;
                             await SaveFileStream.WriteAsync(DownloadBuffer, 0, BytesRead);
                             BytesWritten += BytesRead;
+                            
+                            IsDownloadingEv?.Invoke(this);
                             DownloadingProgress?.Report((double)BytesWritten / ContentLength);
                         }
                         await SaveFileStream.FlushAsync();
+                        SaveFileStream.Close();
+                        if (ContentLength == BytesWritten)
+                        {
+                            DownloadingDone?.Invoke(this);
+                        }
                     }
                 }
             }
         }
-
-        public Task Start()
+        public void Start()
         {
             IsDownloading = true;
-            return Start(BytesWritten);
+            Start(BytesWritten);
         }
-
         public void Pause()
         {
             IsDownloading = false;
         }
     }
+
 
 }

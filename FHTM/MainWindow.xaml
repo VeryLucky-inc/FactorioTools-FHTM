@@ -1,4 +1,5 @@
-﻿<mah:MetroWindow x:Class="FHTM.MainWindow"
+﻿<mah:MetroWindow x:Name="ThisWindow"
+                 x:Class="FHTM.MainWindow"
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,8 +8,9 @@
                  xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                  xmlns:local="clr-namespace:FHTM"
                  xmlns:lmc="clr-namespace:LMC"
+                 xmlns:util="clr-namespace:Wpf.Util"
                  mc:Ignorable="d"
-                 Title="Factorio Helper Tools Manager" Height="450" Width="800">
+                 Title="Factorio Helper Tools Manager" MinHeight="450" MinWidth="800">
 
     <!--<mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands>
@@ -24,6 +26,128 @@
 
     <mah:MetroWindow.Flyouts>
         <mah:FlyoutsControl>
+
+            <mah:Flyout IsOpen="true" x:Name="FlyoutMods" Header="{Binding ModsStatisticText, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Theme="Adapt" Width="{Binding ElementName=ThisWindow, Path=ActualWidth}"  Position="Right">
+                <Border BorderThickness="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border BorderThickness="3" Grid.Column="0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="26"/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Label Grid.Column="0" Content="{Binding TranslateSearch, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                    <TextBox Grid.Column="1" Text="{Binding ModsSearchText, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" mah:TextBoxHelper.Watermark="https://mods.factorio.com/mod/[id]" mah:TextBoxHelper.ClearTextButton="True"/>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                        <Button Width="26" Height="26">
+                                            <iconPacks:PackIconBoxIcons Kind="RegularSearchAlt2" Width="13" Height="13"/>
+                                        </Button>
+                                        <Button Width="26" Height="26" Click="RefreshModsList">
+                                            <iconPacks:PackIconBoxIcons Kind="RegularRefresh" Width="13" Height="13"/>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+
+                                <ListView Grid.Row="1" ItemsSource="{Binding MainModsList, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" 
+                                      SelectedItem="{Binding SelectedMod, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"
+                                      IsSynchronizedWithCurrentItem="True"
+                                      util:GridViewSort.AutoSort="True"
+                                      ScrollViewer.CanContentScroll="True"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                      ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Width="auto" DisplayMemberBinding="{Binding Path=Name}" util:GridViewSort.PropertyName="Name">Mod ID</GridViewColumn>
+                                            <GridViewColumn Width="auto" DisplayMemberBinding="{Binding Path=Title}" util:GridViewSort.PropertyName="Title" Header="{Binding TranslateTitle, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                            <GridViewColumn Width="auto" DisplayMemberBinding="{Binding Path=Category}" util:GridViewSort.PropertyName="Tag" Header="{Binding TranslateCategory, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                            <GridViewColumn Width="auto" DisplayMemberBinding="{Binding Path=LatestRelease.Version}" util:GridViewSort.PropertyName="Version" Header="{Binding TranslateModVersion, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                            <GridViewColumn Width="auto" DisplayMemberBinding="{Binding Path=LatestRelease.InfoJson.FactorioVersion}" util:GridViewSort.PropertyName="FactorioVersion" Header="{Binding TranslateGameVersion, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                            <GridViewColumn Width="auto" DisplayMemberBinding="{Binding Path=Owner}" util:GridViewSort.PropertyName="Author" Header="{Binding TranslateAuthor, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                            <GridViewColumn Width="auto" DisplayMemberBinding="{Binding Path=DownloadsCount}" util:GridViewSort.PropertyName="Downloads" Header="{Binding TranslateDownloadsCount, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                                <mah:ProgressRing Grid.Row="1" Foreground="Red" Width="50" Height="50" IsActive="{Binding ModsLoad, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" />
+                            </Grid>
+                        </Border>
+
+                        <Border BorderThickness="3" Grid.Column="1">
+                            <StackPanel Orientation="Vertical">
+                                <Border BorderThickness="3">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <ComboBox Grid.Column="0" SelectedItem="{Binding SelectedModVersion, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" ItemsSource="{Binding ModVersionsList, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                        <Border BorderThickness="1" Grid.Column="1"><Button Visibility="{Binding ModDownloadVisibility, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Content="{Binding DownloadModText, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Click="DownloadModButtonClick"/></Border>
+                                        <Border BorderThickness="1" Grid.Column="2"><Button Visibility="{Binding ModRemoveVisibility, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Content="{Binding TranslateRemove, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Click="RemoveModButtonClick"/></Border>
+                                    </Grid>
+                                </Border>
+                                <Border BorderThickness="3">
+                                    <Grid>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <Label Content="{Binding TranslateTitle, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                            <Label Content=": "/>
+                                            <Label Content="{Binding SelectedMod.Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"  FontSize="15" FontWeight="Bold"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                                <Border BorderThickness="3">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Content="ID"/>
+                                        <Label Content=": "/>
+                                        <Label Content="{Binding SelectedMod.Name, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border BorderThickness="3">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Content="{Binding TranslateAuthor, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                        <Label Content=": "/>
+                                        <Label Content="{Binding SelectedMod.Owner, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border BorderThickness="3">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Content="{Binding TranslateCategory, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                        <Label Content=": "/>
+                                        <Label Content="{Binding SelectedMod.Category, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border BorderThickness="3">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Content="{Binding TranslateSummary, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                        <Label Content=": "/>
+                                        <Label Content="{Binding SelectedMod.Summary, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border BorderThickness="3">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Content="{Binding TranslateDownloadsCount, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                        <Label Content=": "/>
+                                        <Label Content="{Binding SelectedMod.DownloadsCount, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                        <Label VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Column="1" FontSize="10" Content="Powered by 1488.me | radioegor146, _romanchick"/>
+                    </Grid>
+                </Border>
+            </mah:Flyout>
 
             <mah:Flyout x:Name="FlyoutDownloads" Header="{Binding TranslateDownloads, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Theme="Adapt" Position="Right">
                 <local:MyGridView ItemsSource="{Binding DownloadsList, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}">
@@ -68,12 +192,11 @@
                                         <SolidColorBrush Color="Black" Opacity=".75"/>
                                     </StackPanel.Background>
                                     <TextBlock Foreground="Ivory" FontSize="15" Margin="10">
-                                        <!--<Run Text="{Binding Title, Mode=OneWay}"/>-->
-                                        <Run Text="{Binding BytesWritten, Mode=OneWay}"/>/<Run Text="{Binding ContentLength, Mode=OneWay}"/>
+                                        <Run Text="{Binding Title, Mode=OneWay}"/>
                                     </TextBlock>
                                 </StackPanel>
                                 <Border BorderThickness="3" Grid.Row="1">
-                                    <ProgressBar Value="{Binding BytesWritten, Mode=OneWay}" Maximum="{Binding ContentLength, Mode=OneWay}"/>
+                                    <mah:MetroProgressBar Value="{Binding WritenBytes, Mode=TwoWay}" Maximum="{Binding Downloader.ContentLength, Mode=OneWay}"/>
                                 </Border>
                             </Grid>
                         </DataTemplate>
@@ -107,7 +230,7 @@
                     </Grid.RowDefinitions>
 
                     <Border BorderThickness="3" Grid.Column="0" Grid.Row="0">
-                        <Button Content="{Binding TranslateMods, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                        <ToggleButton IsChecked="{Binding ElementName=FlyoutMods, Path=IsOpen}" Content="{Binding TranslateMods, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
                     </Border>
                     <Border BorderThickness="3" Grid.Column="0" Grid.Row="1">
                         <Button Content="{Binding TranslateScenario, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>

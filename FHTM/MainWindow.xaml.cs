@@ -23,6 +23,7 @@ using IWshRuntimeLibrary;
 using ControlzEx.Theming;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace FHTM
 {
@@ -35,6 +36,8 @@ namespace FHTM
         {
             InitializeComponent();
             InitializeValues();
+            InitializeModsList();
+            InitializeFoldersCheck();
             #region Sync windows theme
             ThemeManager.Current.ThemeSyncMode = ThemeSyncMode.SyncAll;
             ThemeManager.Current.SyncTheme();
@@ -79,7 +82,21 @@ namespace FHTM
                     TranslateDefault = "Обычный",
                     TranslateResetSettings = "Сбросить настройки программы",
                     TranslateResetSettingsDialogTitle = "Сброс настроек программы",
-                    TranslateResetSettingsDialogText = "Внимание\nЭто сбросит все настройки программы!\nПродолжить?"
+                    TranslateResetSettingsDialogText = "Внимание\nЭто сбросит все настройки программы!\nПродолжить?",
+                    TranslateTitle = "Наименование",
+                    TranslateCategory = "Категория",
+                    TranslateModVersion = "Версия мода",
+                    TranslateGameVersion = "Версия игры",
+                    TranslateAuthor = "Автор",
+                    TranslateDownloadsCount = "Загрузок",
+                    TranslateDownload = "Скачать",
+                    TranslateUpdate = "Обновить",
+                    TranslateRemove = "Удалить",
+                    TranslateAddToBuild = "Добавить в сборку",
+                    TranslateRemoveFromBuild = "Убрать из сборки",
+                    TranslateSearch = "Поиск",
+                    TranslateSummary = "Описание"
+
                 }));
                 System.IO.File.WriteAllText($@".\i18n\English", Profile.Serialize.ToJson<Profile.Localization>(new Profile.Localization
                 {
@@ -106,7 +123,21 @@ namespace FHTM
                     TranslateDefault = "Default",
                     TranslateResetSettings = "Reset all app settings",
                     TranslateResetSettingsDialogTitle = "Reset app settings",
-                    TranslateResetSettingsDialogText = "Attention\nThis will reset all program settings!\nDo you want to continue?"
+                    TranslateResetSettingsDialogText = "Attention\nThis will reset all program settings!\nDo you want to continue?",
+                    TranslateTitle = "Title",
+                    TranslateCategory = "Category",
+                    TranslateModVersion = "Mod version",
+                    TranslateGameVersion = "Game version",
+                    TranslateAuthor = "Author",
+                    TranslateDownloadsCount = "Downloads",
+                    TranslateDownload = "Download",
+                    TranslateUpdate = "Update",
+                    TranslateRemove = "Remove",
+                    TranslateAddToBuild = "Add to build",
+                    TranslateRemoveFromBuild = "Remove feom build",
+                    TranslateSearch = "Search",
+                    TranslateSummary = "Description"
+
                 }));
             }
             foreach (string l in Directory.GetFiles(@".\i18n"))
@@ -142,15 +173,39 @@ namespace FHTM
             TranslateResetSettings = Locale.TranslateResetSettings;
             TranslateResetSettingsDialogTitle = Locale.TranslateResetSettingsDialogTitle;
             TranslateResetSettingsDialogText = Locale.TranslateResetSettingsDialogText;
+            TranslateTitle = Locale.TranslateTitle;
+            TranslateCategory = Locale.TranslateCategory;
+            TranslateModVersion = Locale.TranslateModVersion;
+            TranslateGameVersion = Locale.TranslateGameVersion;
+            TranslateAuthor = Locale.TranslateAuthor;
+            TranslateDownloadsCount = Locale.TranslateDownloadsCount;
+            TranslateDownload = Locale.TranslateDownload;
+            TranslateUpdate = Locale.TranslateUpdate;
+            TranslateRemove = Locale.TranslateRemove;
+            TranslateSearch = Locale.TranslateSearch;
+            TranslateSummary = Locale.TranslateSummary;
+
+            #region 150920
+            TranslateAddToBuild = Locale.TranslateAddToBuild;
+            TranslateRemoveFromBuild = Locale.TranslateRemoveFromBuild;
+            #endregion
+
         }
         #endregion
 
         #region Initialize
         private void InitializeValues()
         {
-            DownloadsList = new ObservableCollection<Downloader.FileDownload>();
+            DownloadsList = new ObservableCollection<Download>();
             LocalesList = new ObservableCollection<string>();
+            MainModsList = new ObservableCollection<ModsList.Result>();
+            ModVersionsList = new ObservableCollection<TextBlock>();
+
+            ModDownloadVisibility = Visibility.Hidden;
+            ModRemoveVisibility = Visibility.Hidden;
         }
+
+        #region Profile
         private void InitializeProfile()
         {
             PathApp = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -222,6 +277,32 @@ namespace FHTM
             PathSaves = Config.PathSaves;
             InitializeLocalization();
         }
+        #endregion
+
+        private void InitializeFoldersCheck()
+        {
+            if (!Directory.Exists(@".\Games")) Directory.CreateDirectory(@".\Games");
+            if (!Directory.Exists(@".\Mods")) Directory.CreateDirectory(@".\Mods");
+            if (!Directory.Exists(@".\Blueprints")) Directory.CreateDirectory(@".\Blueprints");
+            if (!Directory.Exists(@".\Builds")) Directory.CreateDirectory(@".\Builds");
+            if (!Directory.Exists(@".\Saves")) Directory.CreateDirectory(@".\Saves");
+            if (!Directory.Exists(@".\Downloads")) Directory.CreateDirectory(@".\Downloads");
+        }
+
+        private void InitializeModsList()
+        {
+            Task.Run(() => {
+                this.Invoke(() => { ModsLoad = true; });
+                ModsList.LocalMod lm = ModsList.LocalMod.FromJson(LMC.Web.GetString(@"https://mods.factorio.com/api/mods?page_size=max"));
+                lm.Results.ToList().ForEach(item => {
+                    this.Invoke(() => {
+                        MainModsList.Add(item);
+                    });
+                });
+                this.Invoke(() => { ModsLoad = false; });
+            });
+        }
+
         #endregion
 
         #region Game Search
@@ -335,7 +416,7 @@ namespace FHTM
         public string TranslateMods
         {
             get { return _TranslateMods; }
-            set { _TranslateMods = value; OnPropertyChanged("TranslateMods"); }
+            set { _TranslateMods = value; OnPropertyChanged("TranslateMods"); ModsStatisticText = ""; }
         }
 
         private string _TranslateGame;
@@ -492,15 +573,182 @@ namespace FHTM
             set { _TranslateResetSettingsDialogText = value; OnPropertyChanged("TranslateResetSettingsDialogText"); }
         }
 
+        private string _TranslateTitle;
+        public string TranslateTitle
+        {
+            get { return _TranslateTitle; }
+            set { _TranslateTitle = value; OnPropertyChanged("TranslateTitle"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateCategory;
+        public string TranslateCategory
+        {
+            get { return _TranslateCategory; }
+            set { _TranslateCategory = value; OnPropertyChanged("TranslateCategory"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateModVersion;
+        public string TranslateModVersion
+        {
+            get { return _TranslateModVersion; }
+            set { _TranslateModVersion = value; OnPropertyChanged("TranslateModVersion"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateGameVersion;
+        public string TranslateGameVersion
+        {
+            get { return _TranslateGameVersion; }
+            set { _TranslateGameVersion = value; OnPropertyChanged("TranslateGameVersion"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateAuthor;
+        public string TranslateAuthor
+        {
+            get { return _TranslateAuthor; }
+            set { _TranslateAuthor = value; OnPropertyChanged("TranslateAuthor"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateDownloadsCount;
+        public string TranslateDownloadsCount
+        {
+            get { return _TranslateDownloadsCount; }
+            set { _TranslateDownloadsCount = value; OnPropertyChanged("TranslateDownloadsCount"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateDownload;
+        public string TranslateDownload
+        {
+            get { return _TranslateDownload; }
+            set { _TranslateDownload = value; OnPropertyChanged("TranslateDownload"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateUpdate;
+        public string TranslateUpdate
+        {
+            get { return _TranslateUpdate; }
+            set { _TranslateUpdate = value; OnPropertyChanged("TranslateUpdate"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateRemove;
+        public string TranslateRemove
+        {
+            get { return _TranslateRemove; }
+            set { _TranslateRemove = value; OnPropertyChanged("TranslateRemove"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateAddToBuild;
+        public string TranslateAddToBuild
+        {
+            get { return _TranslateAddToBuild; }
+            set { _TranslateAddToBuild = value; OnPropertyChanged("TranslateAddToBuild"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateRemoveFromBuild;
+        public string TranslateRemoveFromBuild
+        {
+            get { return _TranslateRemoveFromBuild; }
+            set { _TranslateRemoveFromBuild = value; OnPropertyChanged("TranslateRemoveFromBuild"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateSearch;
+        public string TranslateSearch
+        {
+            get { return _TranslateSearch; }
+            set { _TranslateSearch = value; OnPropertyChanged("TranslateSearch"); if (AppLoaded) SaveProfile(); }
+        }
+
+        private string _TranslateSummary;
+        public string TranslateSummary
+        {
+            get { return _TranslateSummary; }
+            set { _TranslateSummary = value; OnPropertyChanged("TranslateSummary"); }
+        }
+
         #endregion
 
         #region Другие данные
 
-        private ObservableCollection<Downloader.FileDownload> _DownloadsList;
-        public ObservableCollection<Downloader.FileDownload> DownloadsList
+        private ObservableCollection<Download> _DownloadsList;
+        public ObservableCollection<Download> DownloadsList
         {
             get { return _DownloadsList; }
             set { _DownloadsList = value; OnPropertyChanged("DownloadsList"); }
+        }
+        public class Download : INotifyPropertyChanged
+        {
+            public Download(string uri, string path, string filename, string title)
+            {
+                Title = title;
+                URI = uri;
+                TempPath = $@".\Downloads\{Title}\";
+                FinalPath = path;
+                if (!Directory.Exists(@".\Downloads"))
+                {
+                    Directory.CreateDirectory(TempPath);
+                    System.IO.File.WriteAllText($@"{TempPath}Data_{filename}.FHTMD", uri);
+                }
+                else
+                {
+                    if (!Directory.Exists(TempPath))
+                    {
+                        Directory.CreateDirectory(TempPath);
+                        System.IO.File.WriteAllText($@"{TempPath}Data_{filename}.FHTMD", uri);
+                    }
+                    else
+                    {
+                        // Сделать догрузку имеющихся файлов в созданную группу
+                    }
+                }
+
+                Downloader = new Downloader.FileDownload(uri, TempPath);
+                FileName = filename;
+                Downloader.DownloadingDone += Downloader_DownloadingDone;
+                ColSpan = 1;
+                RowSpan = 1;
+                Task.Run(() => { Downloader.Start(); }).ConfigureAwait(false);
+            }
+
+            private void Downloader_DownloadingDone(dynamic fd)
+            {
+                System.IO.File.Move(TempPath + System.IO.Path.GetFileName(URI), FinalPath + FileName);
+                System.IO.File.Delete($@"{TempPath}Data_{FileName}.FHTMD");
+                Directory.Delete(TempPath);
+                EndDownloading?.Invoke(this);
+            }
+
+            private string URI { get; set; }
+            private string TempPath { get; set; }
+            private string FinalPath { get; set; }
+            public string Title { get; set; }
+            public string FileName { get; set; }
+            public int Number { get; set; }
+            public int ColSpan { get; set; }
+            public int RowSpan { get; set; }
+            public delegate void DownloaderReport(Download download);
+            public event DownloaderReport EndDownloading;
+
+            private double _WritenBytes;
+            public double WritenBytes
+            {
+                get { return _WritenBytes; }
+                set { _WritenBytes = value; OnPropertyChanged("WritenBytes"); }
+            }
+
+            private double _DownloadedBytes;
+            public double DownloadedBytes
+            {
+                get { return _DownloadedBytes; }
+                set { _DownloadedBytes = value; OnPropertyChanged("DownloadedBytes"); }
+            }
+            public Downloader.FileDownload Downloader { get; set; }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+            public void OnPropertyChanged([CallerMemberName] string prop = "")
+            {
+                if (PropertyChanged != null)
+                    PropertyChanged(this, new PropertyChangedEventArgs(prop));
+            }
+
         }
 
         private ObservableCollection<string> _LocalesList;
@@ -510,11 +758,176 @@ namespace FHTM
             set { _LocalesList = value; OnPropertyChanged("LocalesList"); }
         }
 
-        private string _AppLocalization;
-        public string AppLocalization
+        #region Mods
+        private ObservableCollection<ModsList.Result> _MainModsList;
+        public ObservableCollection<ModsList.Result> MainModsList
         {
-            get { return _AppLocalization; }
-            set { _AppLocalization = value; OnPropertyChanged("AppLocalization"); if (AppLoaded) SaveProfile(); }
+            get { return _MainModsList; }
+            set { _MainModsList = value; OnPropertyChanged("MainModsList"); }
+        }
+
+        private ObservableCollection<TextBlock> _ModVersionsList;
+        public ObservableCollection<TextBlock> ModVersionsList
+        {
+            get { return _ModVersionsList; }
+            set { _ModVersionsList = value; OnPropertyChanged("ModVersionsList"); }
+        }
+
+        private ModsList.Result _SelectedMod;
+        public ModsList.Result SelectedMod
+        {
+            get
+            {
+                if (AppLoaded && !ModsLoad && _SelectedMod != null && _SelectedMod.Releases == null)
+                {
+                    ModsLoad = true;
+                    ModObj.Mod mod = ModObj.Mod.FromJson(LMC.Web.GetString($"https://mods.factorio.com/api/mods/{_SelectedMod.Name}"));
+
+                    _SelectedMod.Releases = new ObservableCollection<string>();
+                    mod.Releases.ToList().ForEach(item => { _SelectedMod.Releases.Add(item.Version); });
+                    _SelectedMod.ReleasesList = mod.Releases;
+
+                    Regex regex = new Regex(@"([^\s\/]{1,})_([^\s\/]{1,}).zip");
+                    Directory.GetFiles(PathMods).ToList()
+                        .ForEach(item => {
+                            MatchCollection matches = regex.Matches(System.IO.Path.GetFileName(item));
+                            if (matches.Count > 0)
+                            {
+                                if (matches[0].Groups[1].Value == _SelectedMod.Name) _SelectedMod.ReleasesList.ToList().ForEach(item1 => { if (item1.Version == matches[0].Groups[2].Value) item1.Installed = true; else item1.Installed = false; });
+                            }
+                        });
+
+                    ModVersionsList.Clear();
+                    _SelectedMod.ReleasesList.ToList().ForEach(item => {
+                        if (item.Installed) ModVersionsList.Add(new TextBlock(new Run { Text = item.Version, FontStyle = FontStyles.Oblique, FontStretch = FontStretches.Expanded }));
+                        else ModVersionsList.Add(new TextBlock(new Run(item.Version)));
+                    });
+                }
+                Task.Run(() => { LMC.Web.GetString("https://1488.me/factorio/mods/stats.php?type=searches"); this.Invoke(() => { ModsStatisticText = ""; }); }).ConfigureAwait(false);
+
+                DownloadModText = "";
+                ModsLoad = false;
+                return _SelectedMod;
+            }
+            set { _SelectedMod = value; OnPropertyChanged("SelectedMod"); }
+        }
+
+        private string _ModsSearchText;
+        public string ModsSearchText
+        {
+            get { return _ModsSearchText; }
+            set
+            {
+                _ModsSearchText = value; OnPropertyChanged("ModsSearchText");
+                if (!String.IsNullOrWhiteSpace(value) && AppLoaded && !ModsLoad)
+                {
+                    Regex regex = new Regex(@"https?:\/\/mods\.factorio\.com\/mod\/([^\s\/]{1,})");
+                    MatchCollection matches = regex.Matches(value);
+                    if (matches.Count > 0)
+                    {
+                        MainModsList.ToList().ForEach(item => {
+                            if (item.Name == matches[0].Groups[1].Value)
+                            {
+                                SelectedMod = item;
+                                Task.Run(() => { LMC.Web.GetString("https://1488.me/factorio/mods/stats.php?type=searches"); this.Invoke(() => { ModsStatisticText = ""; }); }).ConfigureAwait(false);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        public string ModsStatisticText
+        {
+            get
+            {
+                Mods.Statistic.Stats st = Mods.Statistic.Stats.FromJson(LMC.Web.GetString("https://1488.me/factorio/mods/get_stats.php"));
+                return $"{TranslateMods} | Downloads: {st.Downloads}, Searches: {st.Searches}";
+            }
+            set
+            {
+                OnPropertyChanged("ModsStatisticText");
+            }
+        }
+
+        private TextBlock _SelectedModVersion;
+        public TextBlock SelectedModVersion
+        {
+            get { return _SelectedModVersion; }
+            set { _SelectedModVersion = value; OnPropertyChanged("SelectedModVersion");
+                
+                if (value != null)
+                {
+                    dynamic st = value.Inlines.ToArray()[0];
+                    _SelectedMod.ReleasesList.ToList().ForEach(item =>
+                    {
+                        if (item.Version == st.Text)
+                        {
+                            if (item.Version != _SelectedMod.LatestRelease.Version && item.Installed)
+                            {
+                                DownloadModText = TranslateUpdate;
+                                ModDownloadVisibility = Visibility.Visible;
+                            }
+                            else if (item.Version != _SelectedMod.LatestRelease.Version && !item.Installed)
+                            {
+                                DownloadModText = TranslateDownload;
+                                ModDownloadVisibility = Visibility.Visible;
+                            }
+                            else if (item.Version == _SelectedMod.LatestRelease.Version && item.Installed)
+                            {
+                                ModDownloadVisibility = Visibility.Hidden;
+                            }
+                            else if (!item.Installed)
+                            {
+                                DownloadModText = TranslateDownload;
+                                ModDownloadVisibility = Visibility.Visible;
+                            }
+                            else if (item.Installed)
+                            {
+                                DownloadModText = TranslateUpdate;
+                                ModDownloadVisibility = Visibility.Visible;
+                            }
+
+                            if (item.Installed)
+                            {
+                                ModRemoveVisibility = Visibility.Visible;
+                            }
+                            else
+                            {
+                                ModRemoveVisibility = Visibility.Hidden;
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        private Visibility _ModRemoveVisibility;
+        public Visibility ModRemoveVisibility
+        {
+            get { return _ModRemoveVisibility; }
+            set { _ModRemoveVisibility = value; OnPropertyChanged("ModRemoveVisibility"); }
+        }
+
+        private Visibility _ModDownloadVisibility;
+        public Visibility ModDownloadVisibility
+        {
+            get { return _ModDownloadVisibility; }
+            set { _ModDownloadVisibility = value; OnPropertyChanged("ModDownloadVisibility"); }
+        }
+
+        private string _DownloadModText;
+        public string DownloadModText
+        {
+            get { return _DownloadModText; }
+            set { _DownloadModText = value; OnPropertyChanged("DownloadModText"); }
+        }
+
+        private bool _ModsLoad;
+        public bool ModsLoad
+        {
+            get { return _ModsLoad; }
+            set { _ModsLoad = value; OnPropertyChanged("ModsLoad"); }
         }
 
         private string _PathMods;
@@ -522,6 +935,15 @@ namespace FHTM
         {
             get { return _PathMods; }
             set { _PathMods = value; OnPropertyChanged("PathMods"); if (AppLoaded) SaveProfile(); }
+        }
+
+        #endregion
+
+        private string _AppLocalization;
+        public string AppLocalization
+        {
+            get { return _AppLocalization; }
+            set { _AppLocalization = value; OnPropertyChanged("AppLocalization"); if (AppLoaded) SaveProfile(); }
         }
 
         private string _PathGame;
@@ -586,12 +1008,15 @@ namespace FHTM
         }
         #endregion
 
+        #region Localization
         private void SelectedLocaleChanged(object sender, EventArgs e)
         {
             LoadLocalozation();
             SaveProfile();
         }
+        #endregion
 
+        #region Path changing and open folder
         private void ChangePath(object sender, RoutedEventArgs e)
         {
             Ookii.Dialogs.Wpf.VistaFolderBrowserDialog dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
@@ -635,7 +1060,9 @@ namespace FHTM
                 Process.Start(PathApp);
             }
         }
+        #endregion
 
+        #region Reset settings
         private void ResetAppSettings(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show(TranslateResetSettingsDialogText, TranslateResetSettingsDialogTitle, MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, MessageBoxOptions.ServiceNotification) == MessageBoxResult.Yes)
@@ -648,6 +1075,63 @@ namespace FHTM
 
         #endregion
 
+        #region Mods
+        private void RefreshModsList(object sender, RoutedEventArgs e)
+        {
+            SelectedMod = null;
+            MainModsList = new ObservableCollection<ModsList.Result>();
+            InitializeModsList();
+        }
 
+        private void DownloadModButtonClick(object sender, RoutedEventArgs e)
+        {
+            Download d = new Download($@"https://factorio-launcher-mods.storage.googleapis.com/{_SelectedMod.Name}/{((dynamic)_SelectedModVersion.Inlines.ToArray()[0]).Text}.zip", PathMods, $@"{_SelectedMod.Name}_{((dynamic)_SelectedModVersion.Inlines.ToArray()[0]).Text}.zip", _SelectedMod.Title);
+            d.Title = _SelectedMod.Title;
+            Task.Run(() => { LMC.Web.GetString("https://1488.me/factorio/mods/stats.php?type=downloads"); this.Invoke(() => { ModsStatisticText = ""; }); }).ConfigureAwait(false);
+            d.EndDownloading += DownloadEnd;
+            d.Downloader.IsDownloadingEv += Downloader_IsDownloadingEv;
+            DownloadsList.Add(d);
+            SelectedMod = null;
+            FlyoutMods.IsOpen = false;
+            FlyoutDownloads.IsOpen = true;
+        }
+
+        private void Downloader_IsDownloadingEv(Downloader.FileDownload fd)
+        {
+            DownloadsList.ToList().ForEach(item => {
+                if (fd.Title == item.Title)
+                {
+                    this.Invoke(() =>
+                    {
+                        item.WritenBytes = fd.BytesWritten;
+                    });
+                }
+            });
+        }
+
+        private void DownloadEnd(Download download)
+        {
+            MainModsList.ToList().ForEach(item => {
+                if (item.ReleasesList != null && item.Title == download.Title)
+                {
+                    item.ReleasesList.ToList().ForEach(ist => {
+                        if (download.FileName.Contains(ist.Version)) ist.Installed = true;
+                    });
+                }
+            });
+            this.Invoke(() => {
+                DownloadsList.Remove(download);
+                OnPropertyChanged("DownloadsList");
+            });
+        }
+
+        private void RemoveModButtonClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        #endregion
+
+        #endregion
     }
 }

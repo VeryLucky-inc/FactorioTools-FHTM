@@ -9,20 +9,6 @@ namespace LMC
     using System.Windows;
     using System.Windows.Media;
 
-    public class Mods
-    {
-        public ImageSource Thumbnail { get; set; }
-        public string Title { get; set; }
-        public string Name { get; set; }
-        public string FactorioVersion { get; set; }
-        public string Version { get; set; }
-        public string Author { get; set; }
-        public string Status { get; set; }
-        public string Tag { get; set; }
-        public Visibility Downloader { get; set; }
-        public Visibility Remove { get; set; }
-        public SolidColorBrush ModeColor { get; set; }
-    }
     public class Blueprints
     {
         public ImageSource Thumbnail { get; set; }
@@ -78,7 +64,7 @@ namespace ModObj
 {
     using System;
     using System.Collections.Generic;
-
+    using System.Collections.ObjectModel;
     using System.Globalization;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
@@ -116,7 +102,7 @@ namespace ModObj
         public string Owner { get; set; }
 
         [JsonProperty("releases", NullValueHandling = NullValueHandling.Ignore)]
-        public List<Release> Releases { get; set; }
+        public ObservableCollection<Release> Releases { get; set; }
 
         [JsonProperty("score", NullValueHandling = NullValueHandling.Ignore)]
         public double? Score { get; set; }
@@ -165,6 +151,9 @@ namespace ModObj
 
         [JsonProperty("version", NullValueHandling = NullValueHandling.Ignore)]
         public string Version { get; set; }
+
+        [JsonProperty("Installed", NullValueHandling = NullValueHandling.Ignore)]
+        public bool Installed { get; set; }
     }
 
     public partial class InfoJson
@@ -213,14 +202,14 @@ namespace ModsList
 {
     using System;
     using System.Collections.Generic;
-
+    using System.Collections.ObjectModel;
     using System.Globalization;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 
     public partial class LocalMod
     {
-        [JsonProperty("pagination")]
+        [JsonProperty("pagination", NullValueHandling = NullValueHandling.Ignore)]
         public Pagination Pagination { get; set; }
 
         [JsonProperty("results")]
@@ -286,8 +275,12 @@ namespace ModsList
         [JsonProperty("latest_release")]
         public LatestRelease LatestRelease { get; set; }
 
-        [JsonProperty("thumbnail", NullValueHandling = NullValueHandling.Ignore)]
-        public string Thumbnail { get; set; }
+        [JsonProperty("releases", NullValueHandling = NullValueHandling.Ignore)]
+        public ObservableCollection<string> Releases { get; set; }
+
+        [JsonProperty("releasesList", NullValueHandling = NullValueHandling.Ignore)]
+        public ObservableCollection<ModObj.Release> ReleasesList { get; set; }
+
     }
 
     public partial class LatestRelease
@@ -460,6 +453,45 @@ namespace FHTM.Profile
         [JsonProperty("TranslateResetSettingsDialogText", NullValueHandling = NullValueHandling.Ignore)]
         public string TranslateResetSettingsDialogText { get; set; }
 
+        [JsonProperty("TranslateTitle", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateTitle { get; set; }
+
+        [JsonProperty("TranslateCategory", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateCategory { get; set; }
+
+        [JsonProperty("TranslateModVersion", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateModVersion { get; set; }
+
+        [JsonProperty("TranslateGameVersion", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateGameVersion { get; set; }
+
+        [JsonProperty("TranslateAuthor", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateAuthor { get; set; }
+
+        [JsonProperty("TranslateDownloadsCount", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateDownloadsCount { get; set; }
+
+        [JsonProperty("TranslateDownload", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateDownload { get; set; }
+
+        [JsonProperty("TranslateUpdate", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateUpdate { get; set; }
+
+        [JsonProperty("TranslateRemove", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateRemove { get; set; }
+
+        [JsonProperty("TranslateAddToBuild", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateAddToBuild { get; set; }
+
+        [JsonProperty("TranslateRemoveFromBuild", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateRemoveFromBuild { get; set; }
+
+        [JsonProperty("TranslateSearch", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateSearch { get; set; }
+
+        [JsonProperty("TranslateSummary", NullValueHandling = NullValueHandling.Ignore)]
+        public string TranslateSummary { get; set; }
+
     }
     #endregion
 
@@ -467,5 +499,47 @@ namespace FHTM.Profile
     {
         public static T FromJson<T>(string json) => JsonConvert.DeserializeObject<T>(json, ModObj.Converter.Settings);
         public static string ToJson<T>(this T self) => JsonConvert.SerializeObject(self, ModObj.Converter.Settings);
+    }
+}
+
+namespace Mods.Statistic
+{
+    using System;
+    using System.Collections.Generic;
+
+    using System.Globalization;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+
+    public partial class Stats
+    {
+        [JsonProperty("downloads", NullValueHandling = NullValueHandling.Ignore)]
+        public long? Downloads { get; set; }
+
+        [JsonProperty("searches", NullValueHandling = NullValueHandling.Ignore)]
+        public long? Searches { get; set; }
+    }
+
+    public partial class Stats
+    {
+        public static Stats FromJson(string json) => JsonConvert.DeserializeObject<Stats>(json, Mods.Statistic.Converter.Settings);
+    }
+
+    public static class Serialize
+    {
+        public static string ToJson(this Stats self) => JsonConvert.SerializeObject(self, Mods.Statistic.Converter.Settings);
+    }
+
+    internal static class Converter
+    {
+        public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+        {
+            MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
+            DateParseHandling = DateParseHandling.None,
+            Converters =
+            {
+                new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
+            },
+        };
     }
 }
