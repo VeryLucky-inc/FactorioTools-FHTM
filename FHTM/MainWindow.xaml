@@ -192,11 +192,11 @@
                                         <SolidColorBrush Color="Black" Opacity=".75"/>
                                     </StackPanel.Background>
                                     <TextBlock Foreground="Ivory" FontSize="15" Margin="10">
-                                        <Run Text="{Binding Title, Mode=OneWay}"/>
+                                        <Run Text="{Binding Path=Title, IsAsync=True}"/>
                                     </TextBlock>
                                 </StackPanel>
                                 <Border BorderThickness="3" Grid.Row="1">
-                                    <mah:MetroProgressBar Value="{Binding WritenBytes, Mode=TwoWay}" Maximum="{Binding Downloader.ContentLength, Mode=OneWay}"/>
+                                    <mah:MetroProgressBar Value="{Binding Path=WritenBytes, IsAsync=True}" Maximum="{Binding Path=Downloader.ContentLength, IsAsync=True}" Foreground="{Binding Path=Background, IsAsync=True}"/>
                                 </Border>
                             </Grid>
                         </DataTemplate>

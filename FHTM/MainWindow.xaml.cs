@@ -205,6 +205,15 @@ namespace FHTM
             ModRemoveVisibility = Visibility.Hidden;
         }
 
+        private void InitializeTimers()
+        {
+            #region Downloader
+            DownloaderTimer.Tick += new EventHandler(UpdateDownloadInfo);
+            DownloaderTimer.Interval = new TimeSpan(500);
+            DownloaderTimer.Start();
+            #endregion
+        }
+
         #region Profile
         private void InitializeProfile()
         {
@@ -305,6 +314,13 @@ namespace FHTM
 
         #endregion
 
+        #region Timers
+        private void UpdateDownloadInfo(object sender, EventArgs e)
+        {
+
+        }
+        #endregion
+
         #region Game Search
         private void SearchGame()
         {
@@ -401,6 +417,7 @@ namespace FHTM
         private string _Password;
         private string Password { get { return _Password; } set { _Password = value; if (AppLoaded) SaveProfile(); } }
         private bool AppLoaded = false;
+        private System.Windows.Threading.DispatcherTimer DownloaderTimer = new System.Windows.Threading.DispatcherTimer();
         #endregion
 
         #region Динамические переменные
@@ -700,21 +717,31 @@ namespace FHTM
                     }
                 }
 
+                Background = Brushes.YellowGreen;
                 Downloader = new Downloader.FileDownload(uri, TempPath);
                 FileName = filename;
+                Downloader.IsDownloadingEv += DownloadProgress;
                 Downloader.DownloadingDone += Downloader_DownloadingDone;
                 ColSpan = 1;
                 RowSpan = 1;
                 Task.Run(() => { Downloader.Start(); }).ConfigureAwait(false);
             }
 
-            private void Downloader_DownloadingDone(dynamic fd)
+            #region DownloadHandlers
+            private void DownloadProgress(Downloader.FileDownload fd)
             {
+                if (Downloader.BytesWritten != 0 && Downloader.BytesWritten > WritenBytes && (Downloader.BytesWritten & 1) == 0) WritenBytes = Downloader.BytesWritten;
+            }
+
+            private void Downloader_DownloadingDone(Downloader.FileDownload fd)
+            {
+                WritenBytes = Downloader.BytesWritten;
                 System.IO.File.Move(TempPath + System.IO.Path.GetFileName(URI), FinalPath + FileName);
                 System.IO.File.Delete($@"{TempPath}Data_{FileName}.FHTMD");
                 Directory.Delete(TempPath);
-                EndDownloading?.Invoke(this);
+                Background = Brushes.DarkGreen;
             }
+            #endregion
 
             private string URI { get; set; }
             private string TempPath { get; set; }
@@ -724,8 +751,14 @@ namespace FHTM
             public int Number { get; set; }
             public int ColSpan { get; set; }
             public int RowSpan { get; set; }
-            public delegate void DownloaderReport(Download download);
-            public event DownloaderReport EndDownloading;
+
+
+            private Brush _Background;
+            public Brush Background
+            {
+                get { return _Background; }
+                set { _Background = value; OnPropertyChanged("Background"); }
+            }
 
             private double _WritenBytes;
             public double WritenBytes
@@ -734,12 +767,6 @@ namespace FHTM
                 set { _WritenBytes = value; OnPropertyChanged("WritenBytes"); }
             }
 
-            private double _DownloadedBytes;
-            public double DownloadedBytes
-            {
-                get { return _DownloadedBytes; }
-                set { _DownloadedBytes = value; OnPropertyChanged("DownloadedBytes"); }
-            }
             public Downloader.FileDownload Downloader { get; set; }
 
             public event PropertyChangedEventHandler PropertyChanged;
@@ -787,19 +814,14 @@ namespace FHTM
                     mod.Releases.ToList().ForEach(item => { _SelectedMod.Releases.Add(item.Version); });
                     _SelectedMod.ReleasesList = mod.Releases;
 
-                    Regex regex = new Regex(@"([^\s\/]{1,})_([^\s\/]{1,}).zip");
-                    Directory.GetFiles(PathMods).ToList()
-                        .ForEach(item => {
-                            MatchCollection matches = regex.Matches(System.IO.Path.GetFileName(item));
-                            if (matches.Count > 0)
-                            {
-                                if (matches[0].Groups[1].Value == _SelectedMod.Name) _SelectedMod.ReleasesList.ToList().ForEach(item1 => { if (item1.Version == matches[0].Groups[2].Value) item1.Installed = true; else item1.Installed = false; });
-                            }
-                        });
-
+                    SelectedModVersion = null;
                     ModVersionsList.Clear();
                     _SelectedMod.ReleasesList.ToList().ForEach(item => {
-                        if (item.Installed) ModVersionsList.Add(new TextBlock(new Run { Text = item.Version, FontStyle = FontStyles.Oblique, FontStretch = FontStretches.Expanded }));
+                        if (item.Installed || System.IO.File.Exists($"{PathMods}{item.FileName}"))
+                        {
+                            ModVersionsList.Add(new TextBlock(new Run { Text = item.Version, FontStyle = FontStyles.Oblique, FontStretch = FontStretches.Expanded }));
+                            item.Installed = true;
+                        }
                         else ModVersionsList.Add(new TextBlock(new Run(item.Version)));
                     });
                 }
@@ -1088,41 +1110,13 @@ namespace FHTM
             Download d = new Download($@"https://factorio-launcher-mods.storage.googleapis.com/{_SelectedMod.Name}/{((dynamic)_SelectedModVersion.Inlines.ToArray()[0]).Text}.zip", PathMods, $@"{_SelectedMod.Name}_{((dynamic)_SelectedModVersion.Inlines.ToArray()[0]).Text}.zip", _SelectedMod.Title);
             d.Title = _SelectedMod.Title;
             Task.Run(() => { LMC.Web.GetString("https://1488.me/factorio/mods/stats.php?type=downloads"); this.Invoke(() => { ModsStatisticText = ""; }); }).ConfigureAwait(false);
-            d.EndDownloading += DownloadEnd;
-            d.Downloader.IsDownloadingEv += Downloader_IsDownloadingEv;
             DownloadsList.Add(d);
+            SelectedModVersion = null;
+            ModVersionsList.Clear();
+            _SelectedMod.Releases = null;
             SelectedMod = null;
             FlyoutMods.IsOpen = false;
             FlyoutDownloads.IsOpen = true;
-        }
-
-        private void Downloader_IsDownloadingEv(Downloader.FileDownload fd)
-        {
-            DownloadsList.ToList().ForEach(item => {
-                if (fd.Title == item.Title)
-                {
-                    this.Invoke(() =>
-                    {
-                        item.WritenBytes = fd.BytesWritten;
-                    });
-                }
-            });
-        }
-
-        private void DownloadEnd(Download download)
-        {
-            MainModsList.ToList().ForEach(item => {
-                if (item.ReleasesList != null && item.Title == download.Title)
-                {
-                    item.ReleasesList.ToList().ForEach(ist => {
-                        if (download.FileName.Contains(ist.Version)) ist.Installed = true;
-                    });
-                }
-            });
-            this.Invoke(() => {
-                DownloadsList.Remove(download);
-                OnPropertyChanged("DownloadsList");
-            });
         }
 
         private void RemoveModButtonClick(object sender, RoutedEventArgs e)
