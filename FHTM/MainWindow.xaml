@@ -27,7 +27,7 @@
     <mah:MetroWindow.Flyouts>
         <mah:FlyoutsControl>
 
-            <mah:Flyout IsOpen="true" x:Name="FlyoutMods" Header="{Binding ModsStatisticText, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Theme="Adapt" Width="{Binding ElementName=ThisWindow, Path=ActualWidth}"  Position="Right">
+            <mah:Flyout x:Name="FlyoutMods" Header="{Binding ModsStatisticText, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Theme="Adapt" Width="{Binding ElementName=ThisWindow, Path=ActualWidth}"  Position="Right">
                 <Border BorderThickness="10">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -203,8 +203,19 @@
                     </ItemsControl.ItemTemplate>
                 </local:MyGridView>
             </mah:Flyout>
-            
-            
+
+            <mah:Flyout x:Name="FlyoutAbout" Theme="Adapt" Width="{Binding ElementName=ThisWindow, Path=ActualWidth}" Position="Right">
+                <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="{Binding TranslateAbout, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Это просто описание программы"/>
+                    <TextBlock Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Это просто описание программы"/>
+                </Grid>
+            </mah:Flyout>
             
         </mah:FlyoutsControl>
     </mah:MetroWindow.Flyouts>
@@ -254,7 +265,7 @@
                         <Button Content="{Binding TranslateBlueprints, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
                     </Border>
                     <Border BorderThickness="3" Grid.Column="2" Grid.Row="2">
-                        <Button Content="{Binding TranslateAbout, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+                        <ToggleButton IsChecked="{Binding ElementName=FlyoutAbout, Path=IsOpen}" Content="{Binding TranslateAbout, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
                     </Border>
                 </Grid>
 
