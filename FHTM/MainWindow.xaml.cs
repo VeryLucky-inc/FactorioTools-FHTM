@@ -825,7 +825,14 @@ namespace FHTM
                         else ModVersionsList.Add(new TextBlock(new Run(item.Version)));
                     });
                 }
-                Task.Run(() => { LMC.Web.GetString("https://1488.me/factorio/mods/stats.php?type=searches"); this.Invoke(() => { ModsStatisticText = ""; }); }).ConfigureAwait(false);
+                try
+                {
+                    Task.Run(() => { LMC.Web.GetString("https://1488.me/factorio/mods/stats.php?type=searches"); this.Invoke(() => { ModsStatisticText = ""; }); }).ConfigureAwait(false);
+                }
+                catch
+                {
+                    
+                }
 
                 DownloadModText = "";
                 ModsLoad = false;
@@ -851,7 +858,14 @@ namespace FHTM
                             if (item.Name == matches[0].Groups[1].Value)
                             {
                                 SelectedMod = item;
-                                Task.Run(() => { LMC.Web.GetString("https://1488.me/factorio/mods/stats.php?type=searches"); this.Invoke(() => { ModsStatisticText = ""; }); }).ConfigureAwait(false);
+                                try
+                                {
+                                    Task.Run(() => { LMC.Web.GetString("https://1488.me/factorio/mods/stats.php?type=searches"); this.Invoke(() => { ModsStatisticText = ""; }); }).ConfigureAwait(false);
+                                }
+                                catch
+                                {
+                                    
+                                }
                             }
                         });
                     }
@@ -863,8 +877,15 @@ namespace FHTM
         {
             get
             {
-                Mods.Statistic.Stats st = Mods.Statistic.Stats.FromJson(LMC.Web.GetString("https://1488.me/factorio/mods/get_stats.php"));
-                return $"{TranslateMods} | Downloads: {st.Downloads}, Searches: {st.Searches}";
+                try
+                {
+                    Mods.Statistic.Stats st = Mods.Statistic.Stats.FromJson(LMC.Web.GetString("https://1488.me/factorio/mods/get_stats.php"));
+                    return $"{TranslateMods} | Downloads: {st.Downloads}, Searches: {st.Searches}";
+                }
+                catch
+                {
+                    return "Статистика временно недоступна";
+                }
             }
             set
             {
