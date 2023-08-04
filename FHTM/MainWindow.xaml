@@ -27,7 +27,7 @@
     <mah:MetroWindow.Flyouts>
         <mah:FlyoutsControl>
 
-            <mah:Flyout x:Name="FlyoutMods" Header="{Binding ModsStatisticText, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Theme="Adapt" Width="{Binding ElementName=ThisWindow, Path=ActualWidth}"  Position="Right">
+            <mah:Flyout x:Name="FlyoutMods" Header="{Binding TranslateMods, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Theme="Adapt" Width="{Binding ElementName=ThisWindow, Path=ActualWidth}"  Position="Right">
                 <Border BorderThickness="10">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -144,7 +144,7 @@
                                 </Border>
                             </StackPanel>
                         </Border>
-                        <Label VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Column="1" FontSize="10" Content="Powered by 1488.me | radioegor146, _romanchick"/>
+                        <Label VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Column="1" FontSize="10" Content="Powered by re146.dev | radioegor146, _romanchick"/>
                     </Grid>
                 </Border>
             </mah:Flyout>
@@ -294,7 +294,7 @@
                             <Label Content="{Binding TranslateAppConsole, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
                         </Border>
                         <Border BorderThickness="3">
-                            <RichTextBox x:Name="Console" Height="150"/>
+                            <RichTextBox x:Name="Console" Height="170"/>
                         </Border>
                         <Border BorderThickness="3">
                             <StackPanel Orientation="Horizontal">

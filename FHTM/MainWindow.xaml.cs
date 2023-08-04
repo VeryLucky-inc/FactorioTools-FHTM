@@ -24,6 +24,8 @@ using ControlzEx.Theming;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography.Pkcs;
+using System.Windows.Media.Animation;
 
 namespace FHTM
 {
@@ -325,28 +327,31 @@ namespace FHTM
         private void SearchGame()
         {
             RegistryKey key;
+            string rpath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Factorio_is1";
             try
             {
-                key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall");
-
                 Console.AppendText(TranslateSearchInstalledGame + "\n");
-                foreach (String keyName in key.GetSubKeyNames())
+                key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(rpath);
+                if (key is null)
                 {
-                    dynamic subkey = key.OpenSubKey(keyName);
-                    string stn = subkey.GetValue("DisplayName") as string;
-                    string stv = subkey.GetValue("InstallLocation") as string;
-
-                    if (!String.IsNullOrWhiteSpace(stn) && !String.IsNullOrWhiteSpace(stv))
-                    {
-                        if (stn.Contains("Factorio") || stv.Contains("Factorio"))
-                        {
-                            Console.AppendText($"{stn}: {stv}" + "\n");
-                            PathGame = stv;
-                        }
-                    }
+                    key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(rpath);
+                    if (key != null) Console.AppendText(key.GetValue("Разрядность игры x32!\nЭто может повлиять на производительность игры" +
+                        "Используйте версию x64, если Ваша система это поддерживает для получения максимальной производительности\n" +
+                        "Версия игры никак не влияет на работу FHA. Вы можете продолжать его использовать с текущей версией или любой другой") + "\n");
                 }
+                if (key is null) Console.AppendText($"Игра не установлена в системе или распакована из архива" + "\n");
 
-                SearchGameAdditionalFolders();
+                Console.AppendText(key.GetValue("DisplayName") + "\n");
+                Console.AppendText(key.GetValue("Inno Setup: App Path") + "\n");
+                Console.AppendText(key.GetValue("InstallLocation") + "\n");
+                Console.AppendText("Разрядность игры x64" + "\n");
+                PathGame = key.GetValue("InstallLocation") as string;
+
+                if (!String.IsNullOrWhiteSpace(PathGame)) SearchGameAdditionalFolders();
+                else
+                {
+                    Console.AppendText($"Ошибка получения расположения игры!" + "\n");
+                }
             }
             catch (Exception ex)
             {
@@ -433,7 +438,7 @@ namespace FHTM
         public string TranslateMods
         {
             get { return _TranslateMods; }
-            set { _TranslateMods = value; OnPropertyChanged("TranslateMods"); ModsStatisticText = ""; }
+            set { _TranslateMods = value; OnPropertyChanged("TranslateMods"); }
         }
 
         private string _TranslateGame;
@@ -825,14 +830,6 @@ namespace FHTM
                         else ModVersionsList.Add(new TextBlock(new Run(item.Version)));
                     });
                 }
-                try
-                {
-                    Task.Run(() => { LMC.Web.GetString("https://1488.me/factorio/mods/stats.php?type=searches"); this.Invoke(() => { ModsStatisticText = ""; }); }).ConfigureAwait(false);
-                }
-                catch
-                {
-                    
-                }
 
                 DownloadModText = "";
                 ModsLoad = false;
@@ -858,38 +855,10 @@ namespace FHTM
                             if (item.Name == matches[0].Groups[1].Value)
                             {
                                 SelectedMod = item;
-                                try
-                                {
-                                    Task.Run(() => { LMC.Web.GetString("https://1488.me/factorio/mods/stats.php?type=searches"); this.Invoke(() => { ModsStatisticText = ""; }); }).ConfigureAwait(false);
-                                }
-                                catch
-                                {
-                                    
-                                }
                             }
                         });
                     }
                 }
-            }
-        }
-
-        public string ModsStatisticText
-        {
-            get
-            {
-                try
-                {
-                    Mods.Statistic.Stats st = Mods.Statistic.Stats.FromJson(LMC.Web.GetString("https://1488.me/factorio/mods/get_stats.php"));
-                    return $"{TranslateMods} | Downloads: {st.Downloads}, Searches: {st.Searches}";
-                }
-                catch
-                {
-                    return "Статистика временно недоступна";
-                }
-            }
-            set
-            {
-                OnPropertyChanged("ModsStatisticText");
             }
         }
 
@@ -1128,9 +1097,8 @@ namespace FHTM
 
         private void DownloadModButtonClick(object sender, RoutedEventArgs e)
         {
-            Download d = new Download($@"https://factorio-launcher-mods.storage.googleapis.com/{_SelectedMod.Name}/{((dynamic)_SelectedModVersion.Inlines.ToArray()[0]).Text}.zip", PathMods, $@"{_SelectedMod.Name}_{((dynamic)_SelectedModVersion.Inlines.ToArray()[0]).Text}.zip", _SelectedMod.Title);
+            Download d = new Download($@"https://official-factorio-mirror.re146.dev/{_SelectedMod.Name}/{((dynamic)_SelectedModVersion.Inlines.ToArray()[0]).Text}.zip", PathMods, $@"{_SelectedMod.Name}_{((dynamic)_SelectedModVersion.Inlines.ToArray()[0]).Text}.zip", _SelectedMod.Title);
             d.Title = _SelectedMod.Title;
-            Task.Run(() => { LMC.Web.GetString("https://1488.me/factorio/mods/stats.php?type=downloads"); this.Invoke(() => { ModsStatisticText = ""; }); }).ConfigureAwait(false);
             DownloadsList.Add(d);
             SelectedModVersion = null;
             ModVersionsList.Clear();
